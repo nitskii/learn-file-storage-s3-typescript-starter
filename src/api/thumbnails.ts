@@ -1,4 +1,5 @@
 import type { BunRequest } from "bun";
+import { join } from 'node:path';
 import { getBearerToken, validateJWT } from "../auth";
 import type { ApiConfig } from "../config";
 import { getVideo, updateVideo } from "../db/videos";
@@ -37,10 +38,17 @@ export async function handlerUploadThumbnail(cfg: ApiConfig, req: BunRequest) {
     throw new UserForbiddenError('Not an owner');
   }
 
-  const mediaType = file.type;
-  const data = Buffer.from(await file.arrayBuffer()).toString('base64');
+  const supportedMimeTypes = ['image/jpeg', 'image/png'];
 
-  videoMetadata.thumbnailURL = `data:${mediaType};base64,${data}`;
+  if (!supportedMimeTypes.includes(file.type)) {
+    throw new BadRequestError(`Invalid thumbnail type. Must be one of: ${supportedMimeTypes.join(', ')}`);
+  }
+
+  const extension = file.type.split('/')[1];
+  const thumbnailPath = join(cfg.assetsRoot, `${videoMetadata.id}.${extension}`);
+  await Bun.write(thumbnailPath, file);
+
+  videoMetadata.thumbnailURL = `http://localhost:${cfg.port}/${thumbnailPath}`;
 
   updateVideo(cfg.db, videoMetadata);
 
