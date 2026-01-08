@@ -1,18 +1,18 @@
 import { ensureAssetsDir } from "./api/assets";
 import { handlerLogin, handlerRefresh, handlerRevoke } from "./api/auth";
 import {
-  cacheMiddleware,
-  errorHandlingMiddleware,
-  withConfig,
+    errorHandlingMiddleware,
+    noCacheMiddleware,
+    withConfig,
 } from "./api/middleware";
 import { handlerReset } from "./api/reset";
 import { handlerUploadThumbnail } from "./api/thumbnails";
 import { handlerUsersCreate } from "./api/users";
 import {
-  handlerVideoGet,
-  handlerVideoMetaCreate,
-  handlerVideoMetaDelete,
-  handlerVideosRetrieve,
+    handlerVideoGet,
+    handlerVideoMetaCreate,
+    handlerVideoMetaDelete,
+    handlerVideosRetrieve,
 } from "./api/video-meta";
 import { handlerUploadVideo } from "./api/videos";
 import spa from "./app/index.html";
@@ -61,7 +61,7 @@ Bun.serve({
     const path = url.pathname;
 
     if (path.startsWith("/assets")) {
-      return cacheMiddleware(() =>
+      return noCacheMiddleware(() =>
         serveStaticFile(path.replace("/assets/", ""), cfg.assetsRoot)
       )(req);
     }

@@ -1,4 +1,5 @@
 import type { BunRequest } from "bun";
+import { randomBytes } from 'node:crypto';
 import { join } from 'node:path';
 import { getBearerToken, validateJWT } from "../auth";
 import type { ApiConfig } from "../config";
@@ -45,7 +46,7 @@ export async function handlerUploadThumbnail(cfg: ApiConfig, req: BunRequest) {
   }
 
   const extension = file.type.split('/')[1];
-  const thumbnailPath = join(cfg.assetsRoot, `${videoMetadata.id}.${extension}`);
+  const thumbnailPath = join(cfg.assetsRoot, `${randomBytes(32).toString('base64url')}.${extension}`);
   await Bun.write(thumbnailPath, file);
 
   videoMetadata.thumbnailURL = `http://localhost:${cfg.port}/${thumbnailPath}`;
